@@ -24,10 +24,11 @@ struct sockaddr_in p_adr_server;
 
 void server_test_communication()
 {
+	while(1){
 	char tampon[10];
 	printf("valeur de read : %d\n",(int) read(sock,tampon,1));
 	printf("tampon[0] : %s \n", tampon);
-
+	}
 }
 
 
@@ -133,25 +134,41 @@ int main(int argc, char const *argv[])
 
 	char* service = SERVICE_DEFAUT;
 
+	char host_name [256];
+	char sock_name [256];
+	size_t lg = 0;
 
 	sock_initiale = socket(PF_UNIX, SOCK_STREAM, IPPROTO_TCP);
 	if(sock_initiale < 0) {printf("Probleme dans socket\n");}
+
+	int hostname_value = gethostname(host_name, 256);
+	printf("hostname : %s \n", host_name );
+
 
 	adr_socket(SERVICE_DEFAUT,INADDR_ANY,"tcp", &p_adr_server);
 
 
 	if(bind( sock_initiale, (struct sockaddr *) &p_adr_server, sizeof(struct sockaddr_in) ) < 0) {printf("Probleme dans bind\n");}
 
-	if(!listen(sock_initiale, 10)) {
-		printf("Probleme dans listen\n");
+	while(1)
+	{
+		if(!listen(sock_initiale, 10)) {
+			printf("Probleme dans listen\n");
+		}
+		uint entier=sizeof( struct sockaddr ) ;
+
+
+		sock = accept(sock_initiale, (struct sockaddr *) &p_adr_server, &entier );
+
+
+
+
+
+
+		server_test_communication(service, "tcp");
+
+		close(sock);
 	}
-	uint entier=sizeof( struct sockaddr ) ;
-	sock = accept(sock_initiale, (struct sockaddr *) &p_adr_server, &entier );
-
-	server_test_communication(service, "tcp");
-
-	close(sock);
-
 	return 0;
 }
 
