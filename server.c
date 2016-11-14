@@ -3,51 +3,38 @@
 
 #include <sys/types.h>          /* See NOTES */
 #include <sys/socket.h>
+#include <errno.h>
+#include <string.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
 
 
 #define SERVICE_DEFAUT "1111"
 #define PROTOCOLE_DEFAUT "tcp"
+#define AUCUNE_ADR_INET 0xFFFFFFFF
+#define DEFPORTBASE 	0
 
 
 int sock, sock_initiale; //ports des sockets qui seront utilisées
-sockaddr_in p_adr_server;
+struct sockaddr_in p_adr_server;
 
 
-int main(int argc, char const *argv[])
-{
-
-	char* service = SERVICE_DEFAUT;
-	char* commande = "";
-
-	sock_initiale = socket(PF_UNIX, SOCK_STREAM, IPPROTO_TCP);
-	if(sock_initiale < 0) {printf("Probleme dans socket\n");}
-
-	adr_socket(SERVICE_DEFAUT,INADDR_ANY, &p_adr_server);
 
 
-	if(bind( num_soc, (struct sockaddr *)p_adr_server, sizeof(struct
-	sockaddr_in) ) < 0) {printf("Probleme dans bind\n");}
 
-	if(!listen(sock_initiale, 10)) {
-		printf("Probleme dans listen\n");
-	}
 
-	sock = accept(sock_initiale, &p_adr_server, sizeof( struct sockaddr ));
 
-	server_test_communication(service, "tcp");
-
-	closesocket(sock);
-
-	return 0;
-}
 
 
 
 void server_test_communication()
 {
-	char[10] tampon = ;
+	char tampon[10];
 	printf("valeur de read : %d\n",read(sock,tampon,1));
-	printf("char[0] : %s \n", char[0]);
+	printf("tampon[0] : %s \n", tampon);
 
 }
 
@@ -138,3 +125,42 @@ void adr_socket ( char *service, char *serveur, char *protocole,
 	printf("%s ADR_SOCKET (fin) .........\n",aff_debug); 
 #endif
 }
+
+
+
+
+
+
+
+
+
+
+
+int main(int argc, char const *argv[])
+{
+
+	char* service = SERVICE_DEFAUT;
+	char* commande = "";
+
+	sock_initiale = socket(PF_UNIX, SOCK_STREAM, IPPROTO_TCP);
+	if(sock_initiale < 0) {printf("Probleme dans socket\n");}
+
+	adr_socket(SERVICE_DEFAUT,INADDR_ANY,"tcp", &p_adr_server);
+
+
+	if(bind( sock_initiale, (struct sockaddr *) &p_adr_server, sizeof(struct sockaddr_in) ) < 0) {printf("Probleme dans bind\n");}
+
+	if(!listen(sock_initiale, 10)) {
+		printf("Probleme dans listen\n");
+	}
+
+	sock = accept(sock_initiale, &p_adr_server, sizeof( struct sockaddr ));
+
+	server_test_communication(service, "tcp");
+
+	close(sock);
+
+	return 0;
+}
+
+
