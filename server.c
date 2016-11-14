@@ -22,18 +22,10 @@ int sock, sock_initiale; //ports des sockets qui seront utilisées
 struct sockaddr_in p_adr_server;
 
 
-
-
-
-
-
-
-
-
 void server_test_communication()
 {
 	char tampon[10];
-	printf("valeur de read : %d\n",read(sock,tampon,1));
+	printf("valeur de read : %d\n",(int) read(sock,tampon,1));
 	printf("tampon[0] : %s \n", tampon);
 
 }
@@ -44,7 +36,7 @@ void adr_socket ( char *service, char *serveur, char *protocole,
 {
 	struct hostent *p_info_serveur ;  /* pointeur sur infos serveur         */
 	struct servent *p_info_service ;  /* pointeur sur infos service	distant	*/
-	char str[INET_ADDRSTRLEN];
+	
 
 	
 #ifdef DEBUG
@@ -140,7 +132,7 @@ int main(int argc, char const *argv[])
 {
 
 	char* service = SERVICE_DEFAUT;
-	char* commande = "";
+
 
 	sock_initiale = socket(PF_UNIX, SOCK_STREAM, IPPROTO_TCP);
 	if(sock_initiale < 0) {printf("Probleme dans socket\n");}
@@ -153,8 +145,8 @@ int main(int argc, char const *argv[])
 	if(!listen(sock_initiale, 10)) {
 		printf("Probleme dans listen\n");
 	}
-
-	sock = accept(sock_initiale, &p_adr_server, sizeof( struct sockaddr ));
+	uint entier=sizeof( struct sockaddr ) ;
+	sock = accept(sock_initiale, (struct sockaddr *) &p_adr_server, &entier );
 
 	server_test_communication(service, "tcp");
 
