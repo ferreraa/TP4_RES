@@ -115,41 +115,50 @@ void adr_socket ( char *service, char *serveur, char *protocole,
 int main (int argc, char *argv[]){
 		// en parametre l'adresse et le port du serveur faire pb si il y sont pas 
 		
+		if (argc <3) printf("Il manque des arguments\n");
+		else {
+			/*******************************
+			// connexion au serveur 
+			* ***************************/
+			
+			int sock = socket(PF_UNIX,SOCK_STREAM,IPPROTO_TCP);
+				// PF_NIX a changer par AF_INET pour communication en reseaux
+				// renvoie -1 si il y a un probleme
+				if (sock==-1) printf("Il y a un probleme avec la socket\n");
+				else printf("la socket est :%d",sock);
+					
+			struct sockaddr_in sin;
+			
+			//argv[1]->port et argv[2]-> adresse
+			adr_socket (argv[1], argv[2], "tcp",&sin);
 		
-		/*******************************
-		// connexion au serveur 
-		* ***************************/
-		
-		int sock = socket(PF_UNIX,SOCK_STREAM,IPPROTO_TCP);
-			// PF_NIX a changer par AF_INET pour communication en reseaux
-			// renvoie -1 si il y a un probleme 
-		struct sockaddr_in sin;
-		
-		//argv[1]->port et argv[2]-> adresse
-		adr_socket (argv[1], argv[2], "tcp",&sin);
-	
-		connect(sock, (struct sockaddr *) &sin , sizeof(struct sockaddr_in));
-		
-		//Elle retourne 1 si la connexion n’est pas possible 0 sinon.
-		
-		
-		/************************************
-		l'utilisateur entre les commande au clavier 
-		************************************/
-		char buffer[1024];
-		buffer[0]='b';
-		buffer[1]='o';
-		buffer[2]='n';
-		buffer[3]='j';
-		buffer[4]='o';
-		buffer[5]='u';
-		buffer[6]='r';
-		
-		write(sock , buffer, 7);
-		
-		
-		//a un moment fermer la sockets...
-		close(sock);
+			int prout = connect(sock, (struct sockaddr *) &sin , sizeof(struct sockaddr_in));
+			if (prout==1) printf("Le connexion n'as pas pu etre etablie\n");
+			else printf("La connexion est etablie\n");
+			
+			//Elle retourne 1 si la connexion n’est pas possible 0 sinon.
+			
+			
+			/************************************
+			l'utilisateur entre les commande au clavier 
+			************************************/
+			char buffer[1024];
+			buffer[0]='b';
+			buffer[1]='o';
+			buffer[2]='n';
+			buffer[3]='j';
+			buffer[4]='o';
+			buffer[5]='u';
+			buffer[6]='r';
+			
+			prout = write(sock , buffer, 7);
+			if (prout==-1) printf("Le message n'a pas pu etre envoye\n");
+			else printf("le message a bien ete envoyée\n");
+			 
+			
+			//a un moment fermer la sockets...
+			close(sock);
+		}
 }
 
 /*les commande sont:
