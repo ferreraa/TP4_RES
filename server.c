@@ -135,40 +135,47 @@ int main(int argc, char const *argv[])
 	char* service = SERVICE_DEFAUT;
 
 	char host_name [256];
-	char sock_name [256];
-	size_t lg = 0;
+	//char sock_name [256];
 
-	sock_initiale = socket(PF_UNIX, SOCK_STREAM, IPPROTO_TCP);
+	int sendbuff;
+	sock_initiale = socket(PF_UNIX, SOCK_STREAM, 0);//remplacer peut etre 0 par IPPROTO_TCP
+	setsockopt(sock_initiale, SOL_SOCKET, SO_REUSEADDR, (char *) &sendbuff, sizeof(sendbuff));
 	if(sock_initiale < 0) {printf("Probleme dans socket\n");}
 
-	int hostname_value = gethostname(host_name, 256);
+	printf("socket : %d\n", sock_initiale);
+
+/*	int hostname_value =*/ gethostname(host_name, 256);
 	printf("hostname : %s \n", host_name );
 
 
 	adr_socket(SERVICE_DEFAUT,INADDR_ANY,"tcp", &p_adr_server);
 
 
-	if(bind( sock_initiale, (struct sockaddr *) &p_adr_server, sizeof(struct sockaddr_in) ) < 0) {printf("Probleme dans bind\n");}
-
+	if(bind( sock_initiale, (struct sockaddr *) &p_adr_server, sizeof(struct sockaddr_in) ) == 0) {printf("Le bind a marche\n");}
+	else printf("Probleme avec le bind\n");
+//tester autrement les probleme dans bind
 	while(1)
 	{
-		if(!listen(sock_initiale, 10)) {
+		//mettre un scanf
+	/*	if(!listen(sock_initiale, 10)) {
 			printf("Probleme dans listen\n");
 		}
+		else printf("le listen c'est bien passe\n");*/
 		uint entier=sizeof( struct sockaddr ) ;
 
 
 		sock = accept(sock_initiale, (struct sockaddr *) &p_adr_server, &entier );
+		/*if (sock==-1) printf("Probleme avec le accept\n");
+		else printf("tout va bien avec le accept\n");*/
 
 
 
-
-
+	}
 
 		server_test_communication(service, "tcp");
 
 		close(sock);
-	}
+	
 	return 0;
 }
 
