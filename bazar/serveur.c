@@ -107,7 +107,7 @@ int lg_reponse;
 		scanf(" entre la reponse :%s",reponse);
 		
 		lg_reponse= strlen(reponse);
-		printf(" La Longueur est :%i\n",lg_reponse);
+		printf(" La Longueur est :%d\n",lg_reponse);
 		sprintf(tempo,"%d",lg_reponse);
 		if (lg_reponse<10){
 			tempo[1]=tempo[0];
@@ -119,7 +119,7 @@ int lg_reponse;
 		printf(" On a fini d'envoyer\n");
 		
 		printf("On envoie la reponse\n");
-		h_writes(sock,"lu",2);//On envoie la reponse
+		h_writes(sock,reponse,6);//On envoie la reponse
 		printf ("on as fini d'ecrire la reponse\n");
 		if (tempo[0]=='q') {
 			b=0;
