@@ -159,7 +159,7 @@ while (prout ==1){
 		h_reads(sock, longueur, 2);
 		printf("longueur: %s\n", longueur);
 		lg_reponse= atoi(longueur);
-		printf(" longuer: %i\n", lg_reponse);
+		printf(" longueur: %i\n", lg_reponse);
 		// on recupere ensuite la reponse
 		h_reads(sock,reponse,lg_reponse);
 		reponse[lg_reponse]='\0';		//On s'assure que le mot reçu soit bien utilisable comme une chaine de caractères

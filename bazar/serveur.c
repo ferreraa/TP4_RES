@@ -102,9 +102,9 @@ int lg_reponse;
 
   
 		h_reads(sock,tempo,1); // on lit la commande 
-		printf("%s\n",tempo);
+		printf("%s\n entre la reponse :",tempo);
 		
-		scanf(" entre la reponse :%s",reponse);
+		scanf("%s",reponse);
 		
 		lg_reponse= strlen(reponse);
 		printf(" La Longueur est :%d\n",lg_reponse);
