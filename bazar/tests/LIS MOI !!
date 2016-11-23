@@ -1,0 +1,4 @@
+Pour pouvoir travailler efficacement sur le tp, il faut séparer l'executable client et l'executable serveur => ne pas compiler avec geany mais plutot faire :
+-aller dans le répertoire bazar
+-taper la commande : make && cp client tests/client/ && cp serveur tests/serveur/
+-ouvrir un terminal dans .../bazar/tests/client et un dans .../bazar/tests/serveur

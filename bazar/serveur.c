@@ -1,3 +1,4 @@
+
 /******************************************************************************/
 /*			Application: Le pendu			              */
 /******************************************************************************/
@@ -19,12 +20,17 @@
 #include<sys/wait.h>
 #include <stdlib.h>
 
+#include <unistd.h>
+
+
 #include "fon.h"     		/* Primitives de la boite a outils */
 
 #define SERVICE_DEFAUT "1111"
 #define PROTOCOLE_DEFAUT "tcp"
 
 void serveur_appli (char *service, char* protocole);   /* programme serveur */
+void get(char *nom_fic); /* procedure qui envoie le contenu du fichier nom_fic au client*/
+
 
 struct sockaddr_in p_adr_socket;
 int sock_initiale,sock; //port des sockets qui seront utilisées
@@ -86,6 +92,37 @@ int sock_initiale,sock; //port des sockets qui seront utilisées
 }
 
 
+/***********************************************************
+/* envoyer une chaine de caractere avec sa longueur */
+/************************************************************/
+void envoie (char * c, int l){
+	
+	char temp [2];
+	sprintf(temp,"%d",l);
+	if (l<10){
+		temp[1]=temp[0];
+		temp[0]='0';
+	}
+	h_writes(sock,temp, 2);
+	h_writes(sock,c,l);
+	c[l]='\0';
+	printf ("J'ai envoye le message %s de longueur %i\n", c,l);
+}
+				
+void recoie(char * c){
+	char char_l[2];
+	int l;
+	// on recupere la longueur de la reponse 
+	h_reads(sock, char_l, 2);
+	l= atoi(char_l);
+	// on recupere ensuite la reponse
+	h_reads(sock,c,l);
+	c[l]='\0';		//On s'assure que le mot reçu soit bien utilisable comme une chaine de caractères
+	printf("\nReponse : %s\n",c);
+}
+
+/***************************************************************/
+
 
 /******************************************************************************/	
 void serveur_appli(char *service, char *protocole)
@@ -95,40 +132,88 @@ void serveur_appli(char *service, char *protocole)
 {
 	int b=1;
   char tempo[2];//longueur du mot exprimée sous forme d'une chaine de caractères.   Puis caractère envoyé par le client. 
-char reponse[20];
+  char lettre[2] = " ";
+char reponse[200];
+FILE *fp;
+int fd;
+char buf;
 int lg_reponse;
+char message [200];
+char nom_fic [100];
+
   printf("Bienvenue \n");
 	while (b==1){
 
   
-		h_reads(sock,tempo,1); // on lit la commande 
-		printf("%s\n entre la reponse :",tempo);
+
+		h_reads(sock,lettre,1); // on lit la commande 
 		
-		scanf("%s",reponse);
+		printf("%s\n",lettre);
 		
-		lg_reponse= strlen(reponse);
-		printf(" La Longueur est :%d\n",lg_reponse);
-		sprintf(tempo,"%d",lg_reponse);
-		if (lg_reponse<10){
-			tempo[1]=tempo[0];
-			tempo[0]='0';
-		}
-		printf ("On envoie %s \n",tempo);
-		
-		h_writes(sock,tempo, 2);
-		printf(" On a fini d'envoyer\n");
-		
-		printf("On envoie la reponse\n");
-		h_writes(sock,reponse,6);//On envoie la reponse
-		printf ("on as fini d'ecrire la reponse\n");
-		if (tempo[0]=='q') {
+		if (lettre[0]=='q') {
 			b=0;
 			printf("Au revoir\n");
+		}
+		else {
+			if (lettre[0]=='l'){ // cas du ls ******************************
+				fp = popen("ls *", "r");
+				printf("J'ai fait le ls\n");
+				fd=fileno(fp);
+				
+				lg_reponse=0;
+				while (read(fd,&buf,1)==1){
+					reponse[lg_reponse]=buf;
+					lg_reponse++;
+				}
+				
+				
+				// envoyer la longueur -> PROBLEME SI LA LONGUEUR EST SUPERIEUR A 99
+				envoie(reponse, lg_reponse);
+			}
+			
+				
+			else {
+				if(lettre[0] == 'g'|| lettre[0] == 'p')
+				{
+					recoie(nom_fic);
+					if (lettre[0] == 'g')
+					{
+						get(nom_fic);
+					}
+					
+				}
+				/*
+				printf("Entrez une reponse\n");
+				scanf("%s",reponse);
+				
+				envoie(reponse, strlen(reponse));
+				*/
+			}
 		}
 	}
   }
 
+//la lecture peut surement être optimisée.
+void get(char *nom_fic)
+{
+	printf("Je commence le get !\n");
+	
+	FILE * fp = fopen(nom_fic, "r");
+	int nb_lus; //nb d'octets lus dans le fichier
+	char buffer [1000];
+	
+	do
+	{
+		nb_lus = fread(buffer,1,1000,fp);
+		
+		printf("Je vais ecrire %d octets !\n", nb_lus);
+		h_writes(sock, buffer, nb_lus);
+	}while(nb_lus == 1000);
+	
+	fclose(fp);
+}
 
 
 /******************************************************************************/	
+
 
