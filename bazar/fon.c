@@ -103,6 +103,7 @@ int h_socket ( int domaine, int mode )
 #endif
 
 	if (domaine!=AF_INET) printf(" Sous internet utiliser -> AF_INET\n");
+	if (domaine==PF_UNIX) printf(" Sous internet utiliser -> PFUNIX\n");
 	if ( (mode!=SOCK_STREAM)&&(mode!=SOCK_DGRAM)) printf(" Mode a choisir parmi : SOCK_STREAM, SOCK_DGRAM \n");
 
 	res = socket( domaine, mode, 0 ) ;

@@ -17,6 +17,7 @@
 
 #include<sys/signal.h>
 #include<sys/wait.h>
+#include <stdlib.h>
 
 #include "fon.h"     		/* Primitives de la boite a outils */
 
@@ -30,7 +31,7 @@ int sock_initiale,sock; //port des sockets qui seront utilisées
 /******************************************************************************/	
 /*---------------- programme serveur ------------------------------*/
 
-main(int argc,char *argv[])
+ int main(int argc,char *argv[])
 {
 
 	char *service= SERVICE_DEFAUT; /* numero de service par defaut */
@@ -85,18 +86,6 @@ main(int argc,char *argv[])
 }
 
 
-//met à jour le mot connu par le client en fonction de sa proposition
-void maj(char *mot, char *mot_cache,char *caract)
-{
-
-  int i=0;
-  while(mot[i]!='\0')
-  {
-	if(mot[i]==*caract) mot_cache[i]=*caract;
-	i++;
-  }
-
-}
 
 /******************************************************************************/	
 void serveur_appli(char *service, char *protocole)
@@ -104,42 +93,42 @@ void serveur_appli(char *service, char *protocole)
 /* Procedure correspondant au traitemnt du serveur de votre application */
 
 {
-  int i; //indice
-  int lg_mot,decouverte=0;	//longueur du mot à découvrir et nombre de lettres découvertes par le client
-  char mot[50],mot_cache[50]; //le mot secret et le mot transmis au client
+	int b=1;
   char tempo[2];//longueur du mot exprimée sous forme d'une chaine de caractères.   Puis caractère envoyé par le client. 
+char reponse[20];
+int lg_reponse;
+  printf("Bienvenue \n");
+	while (b==1){
 
-  printf("Bienvenue dans le jeu du pendu, quel mot souhaitez vous faire deviner ?\n");
-  scanf("%s",mot);
-  lg_mot=strlen(mot); // On a saisi le mot à deviner et on en a déduit sa longueur
-
-//On envoie le mot mystère sous forme d'une suite de tirets
-  for(i=0;i<lg_mot;i++) mot_cache[i]='-';
-  mot_cache[i]='\0';
-
-  sprintf(tempo,"%d",lg_mot);
-//On indique à tempo la longueur du mot à deviner, pour qu'il l'envoie sous forme de chaine de caractères au client
-
-
-  if(lg_mot<10) //si la longueur du mot se code sur 1 caractères, on place un 0 sur le premier. Ainsi, le client lira toujours 2 caractères, sans avoir à se soucier si la longueur est > ou < à 10
-  {
-    tempo[1]=tempo[0];
-    tempo[0]='0';
+  
+		h_reads(sock,tempo,1); // on lit la commande 
+		printf("%s\n",tempo);
+		
+		scanf(" entre la reponse :%s",reponse);
+		
+		lg_reponse= strlen(reponse);
+		printf(" La Longueur est :%i\n",lg_reponse);
+		sprintf(tempo,"%d",lg_reponse);
+		if (lg_reponse<10){
+			tempo[1]=tempo[0];
+			tempo[0]='0';
+		}
+		printf ("On envoie %s \n",tempo);
+		
+		h_writes(sock,tempo, 2);
+		printf(" On a fini d'envoyer\n");
+		
+		printf("On envoie la reponse\n");
+		h_writes(sock,"lu",2);//On envoie la reponse
+		printf ("on as fini d'ecrire la reponse\n");
+		if (tempo[0]=='q') {
+			b=0;
+			printf("Au revoir\n");
+		}
+	}
   }
 
 
-  h_writes(sock,tempo,strlen(tempo)); //On envoie au client la longueur du mot
-
-
-  while(decouverte<lg_mot) //tant que le mot n'a pas été découvert
-  {
-
-	h_reads(sock,tempo,1);	//On lit la proposition du client
-	maj(mot,mot_cache,tempo);//On met à jour le mot connu par le client
-	h_writes(sock,mot_cache,lg_mot);//On envoie le nouveau mot au client (après sa maj)
-  }
-
-}
 
 /******************************************************************************/	
 

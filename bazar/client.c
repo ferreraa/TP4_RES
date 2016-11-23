@@ -21,6 +21,8 @@
 #define PROTOCOLE_DEFAUT "tcp"
 #define SERVEUR_DEFAUT "localhost"
 
+#include <stdlib.h>
+
 
 int sock; //définit la socket pour la connexion au serveur
 
@@ -116,51 +118,61 @@ void client_appli (char *serveur,char *service,char *protocole)
 /* procedure correspondant au traitement du client de votre application */
 
 {
-  char tampon[50];
-  int nb_essais; //définit le nombre d'essais autorisés à l'origine et le nbr d'essaie restant au cours du programme
+ 
+ 
   int lg_mot;
   char mot[50];
   int decouvert = 0; //nombre de lettres découvertes sur le mot
   int tempo;
+  char reponse[20];
+  char  longueur [100];
+  int lg_reponse;
+char commande [20];
+  printf("Bienvenue\n");
+	int prout=1;
+	char lettre;
+  
+while (prout ==1){
+	printf("\n->");
+	scanf("%s",commande);
 
-  printf("Bienvenue dans le jeu du pendu. Veuillez choisir votre nombre de tentatives maximales :\n");
-  scanf("%d",&nb_essais); //saisie de la difficulté du jeu
+	switch (commande[0]){
+		case 'l': printf("ls");lettre='l';
+			break;
+		case 'p': {printf("put"); lettre ='p';}//recuperer le nom du fichier
+			break;
+		case 'g': {printf("get"); lettre='g';}//recuperer le nom du fichier
+			break;
+		case 'q': {printf("Au revoir\n"); prout = 0;lettre='q';}
+			break;
+		default : printf("aretter de faire n'importe quoi ! \n");
+	}
+	h_writes(sock,&lettre,1);
+  
 
-  h_reads(sock,tampon,2); //recoit la longueur du mot à deviner
-  lg_mot = atoi(tampon); //on convertit la chaine de caractère en entier pour connaitre la longueur du mot
+  
+	viderbuffer();
+	
+	lg_reponse=2;
+	if (prout==1){
+		// on recupere la longueur de la reponse 
+		h_reads(sock, longueur, 2);
+		printf("longueur: %s\n", longueur);
+		lg_reponse= atoi(longueur);
+		printf(" longuer: %i\n", lg_reponse);
+		// on recupere ensuite la reponse
+		h_reads(sock,reponse,lg_reponse);
+		reponse[lg_reponse]='\0';		//On s'assure que le mot reçu soit bien utilisable comme une chaine de caractères
 
+		
+		printf("\nReponse : %s\n",reponse);
 
-  printf("Le mot mystere fait %d lettres.\n",lg_mot);
-	viderbuffer();					//On vide le buffer afin de ne pas influencer scanf (viderbuffer() a été définie dans fon.c)
-  while(nb_essais>0 && decouvert<lg_mot )  //tant que le joueur n'a pas complété le mot et n'a pas utilisé toutes ses vies
-  {
-	char lettre_temp; //retiendra la lettre choisie par le joueur
-	printf("Quelle lettre proposez vous ?\n");
-
-
-	scanf("%c",&lettre_temp);
-
-	viderbuffer(); //On vide le buffer après l'appel de scanf pour ne pas causer de problème avec les prochains appels de scanf
-
-
-	h_writes(sock,&lettre_temp,1); //On envoie au serveur la lettre demandée par l'utilisateur
-	h_reads(sock,mot,lg_mot);	//On récupère le mot modifié en fonction de la lettre proposée
-
-	mot[lg_mot]='\0';		//On s'assure que le mot reçu soit bien utilisable comme une chaine de caractères
-
-	tempo=lg_mot-analyse_nouveau_mot(mot);	//tempo récupère la valeur du nombre de lettres découvertes dans le mot reçu
-	if(tempo==decouvert) nb_essais--;	//Si le nouveau nombre de lettres découvertes est identique à l'ancien, ça signifie que la lettre proposée n'y est pas présente
-	else decouvert=tempo;			//sinon, decouvert prend la nouvelle valeur du nombre de lettres découvertes
-
-	printf("\nMot mystere : %s\n",mot);
-
-
-	printf("\nEssais restants : %d\n",nb_essais);
+	}
+}	
 
  }
 
-	if(nb_essais>0) printf("\nFélicitations, vous etes victorieux !\n");
-	else printf("Vous avez ete pendu...\n");
-}
+
+
 /*****************************************************************************/
 
