@@ -31,6 +31,39 @@ int sock; //définit la socket pour la connexion au serveur
 void client_appli (char *serveur, char *service, char *protocole);
 
 
+/***********************************************************
+/* envoyer une chaine de caractere avec sa longueur */
+/************************************************************/
+void envoie (char * c){
+	int l;
+	char temp [2];
+	l= strlen(c);
+	sprintf(temp,"%d",l);
+	if (l<10){
+		temp[1]=temp[0];
+		temp[0]='0';
+	}
+	h_writes(sock,temp, 2);
+	h_writes(sock,c,l);
+	c[l]='\0';
+	printf ("J'ai envoye le message %s de longueur %i\n", c,l);
+}
+				
+void recoie(char * c){
+	char char_l[2];
+	int l;
+	// on recupere la longueur de la reponse 
+	h_reads(sock, char_l, 2);
+	l= atoi(char_l);
+	// on recupere ensuite la reponse
+	h_reads(sock,c,l);
+	c[l]='\0';		//On s'assure que le mot reçu soit bien utilisable comme une chaine de caractères
+	printf("\nReponse : %s\n",c);
+}
+
+/***************************************************************/
+
+
 /*****************************************************************************/
 /*--------------- programme client -----------------------*/
 
@@ -111,6 +144,19 @@ int analyse_nouveau_mot(char * mot)
   return nb_tirets;
 }
 
+void recuperer_nom_fichier (char *nom_fichier,char * commande, char *cmd){
+	int i=0;
+	int j=0;
+	for (i=0; i<3; i++){
+		if (commande[i]!=cmd[i]) printf(" il y a un probleme ...\n");
+	}
+	while (commande[i]==' '){i++;}
+	while (commande [i]!= ' ' && commande[i]!='\0'){
+		nom_fichier[j]=commande[i];
+		i++;
+		j++;
+	}
+}
 
 /*****************************************************************************/
 void client_appli (char *serveur,char *service,char *protocole)
@@ -119,18 +165,19 @@ void client_appli (char *serveur,char *service,char *protocole)
 
 {
  
- 
+	char tempo2 [2];
   int lg_mot;
   char mot[50];
   int decouvert = 0; //nombre de lettres découvertes sur le mot
   int tempo;
-  char reponse[20];
+  char reponse[200];
   char  longueur [100];
   int lg_reponse;
 char commande [20];
   printf("Bienvenue\n");
 	int prout=1;
 	char lettre;
+	char nom_fichier[20];
   
 while (prout ==1){
 	printf("\n->");
@@ -139,9 +186,17 @@ while (prout ==1){
 	switch (commande[0]){
 		case 'l': printf("ls");lettre='l';
 			break;
-		case 'p': {printf("put"); lettre ='p';}//recuperer le nom du fichier
+		case 'p': {
+			printf("put ");
+			lettre ='p';
+			scanf("%s", nom_fichier);
+			printf("\nNom du fichier : %s\n", nom_fichier);}//recuperer le nom du fichier
 			break;
-		case 'g': {printf("get"); lettre='g';}//recuperer le nom du fichier
+		case 'g': {
+			printf("get "); 
+			lettre='g';
+			scanf("%s", nom_fichier);
+			printf("\nNom du fichier : %s\n", nom_fichier);}//recuperer le nom du fichier
 			break;
 		case 'q': {printf("Au revoir\n"); prout = 0;lettre='q';}
 			break;
@@ -155,27 +210,17 @@ while (prout ==1){
 	
 	lg_reponse=2;
 	if (prout==1){
-		// on recupere la longueur de la reponse 
-		h_reads(sock, longueur, 2);
-		printf("longueur: %s\n", longueur);
-		lg_reponse= atoi(longueur);
-		printf(" longuer: %i\n", lg_reponse);
-		// on recupere ensuite la reponse
-		printf("Je commence a lire\n");
-		lg_reponse=6;
-		h_reads(sock,reponse,lg_reponse);
-		printf("J'ai fini de lire\n");
-		reponse[lg_reponse]='\0';		//On s'assure que le mot reçu soit bien utilisable comme une chaine de caractères
-
+		if (lettre=='p' || lettre =='g'){
+			envoie (nom_fichier);
+		}
+		recoie(reponse);
 		
-		printf("\nReponse : %s\n",reponse);
 
 	}
 }	
 
- }
+}
 
 
 
 /*****************************************************************************/
-
