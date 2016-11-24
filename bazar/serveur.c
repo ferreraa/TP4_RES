@@ -196,21 +196,36 @@ char nom_fic [100];
 //la lecture peut surement être optimisée.
 void get(char *nom_fic)
 {
+	char fexiste;
+	
 	printf("Je commence le get !\n");
+	FILE * fp;
 	
-	FILE * fp = fopen(nom_fic, "r");
-	int nb_lus; //nb d'octets lus dans le fichier
-	char buffer [1000];
-	
-	do
+	if(fp = fopen(nom_fic, "r"))
 	{
-		nb_lus = fread(buffer,1,1000,fp);
+		fexiste = 'Y';
+		h_writes(sock,&fexiste,1);
+
+		int nb_lus; //nb d'octets lus dans le fichier
+		char buffer [100];
 		
-		printf("Je vais ecrire %d octets !\n", nb_lus);
-		h_writes(sock, buffer, nb_lus);
-	}while(nb_lus == 1000);
+		do
+		{
+			nb_lus = fread(buffer,1,99,fp);
+			
+			printf("Je vais ecrire %d octets !\n", nb_lus);
+			envoie(buffer, nb_lus);
+		}while(nb_lus == 99);
+		fclose(fp);
+	}
+	else
+	{
+		fexiste = 'N';
+		h_writes(sock,&fexiste,1);
+		
+		printf("ce fichier n'existe pas !\n");
+	}
 	
-	fclose(fp);
 }
 
 

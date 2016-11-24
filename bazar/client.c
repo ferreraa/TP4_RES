@@ -190,7 +190,6 @@ while (prout ==1){
 			break;
 		default : printf("aretter de faire n'importe quoi ! \n");
 	}
-	h_writes(sock,&lettre,1);
   
 
   
@@ -201,9 +200,13 @@ while (prout ==1){
 	if (prout==1){
 		if (lettre == 'l')
 		{
+			h_writes(sock,&lettre,1);
+
 			recoie(reponse);
 		}
 		if (lettre=='p' || lettre =='g'){
+			h_writes(sock,&lettre,1);
+
 			envoie (nom_fichier);
 			
 			if(lettre == 'g') {get(nom_fichier);}
@@ -219,27 +222,37 @@ while (prout ==1){
 //créé un fichier nom_fic et y écrit les messages envoyés par le serveur.
 void get(char * nom_fic)
 {
-	printf("Je commence le get\n");
-	
-	char tampon[1000];
-	int nb_lus; //resultat du read
-	
-	if(nom_fic[0] == 's' || nom_fic[0] == 'c') 
-	{
-		printf("SECURITE : pour ne pas effacer notre code, les fichiers commençant par s ou c ne sont pas encore acceptés !\n");
-		return;
-	}
-	
-	FILE * fp = fopen(nom_fic, "w");
+	char fexiste;
+	h_reads(sock,&fexiste,1);
 
-	do
+	if(fexiste == 'Y')
 	{
-		printf("Je commence à lire \n");
-		nb_lus = h_reads(sock,tampon, 26); //1000 au lieu de 26. Utiliser les jolies fonctions recopie et envoie résoudra le problème. Faire le put sera quasi identique. Bientot on s'occupe des fork et des clients multiples !
-		fwrite(tampon,1, nb_lus, fp);
-	}while(nb_lus==1000);
-	
-	fclose(fp);
+		printf("Je commence le get\n");
+		
+		char tampon[100]; //taille 100 car recoie met un \0 à tampon[99]
+		int nb_lus; //resultat du read
+		
+		if(nom_fic[0] == 's' || nom_fic[0] == 'c') 
+		{
+			printf("SECURITE : pour ne pas effacer notre code, les fichiers commençant par s ou c ne sont pas encore acceptés !\n");
+			return;
+		}
+		
+		FILE * fp = fopen(nom_fic, "w");
+
+		do
+		{
+			printf("Je commence à lire \n");
+			recoie(tampon);
+			printf(" tampon vaut : %s\n",tampon);
+			fwrite(tampon, sizeof(tampon), nb_lus, fp);
+		}while(nb_lus==99);
+		
+		fclose(fp);
+	}
+	else {
+		printf("Ce fichier n'existe pas !\n");
+	}
 }
 	
 	
