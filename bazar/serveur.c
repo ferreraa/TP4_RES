@@ -30,7 +30,7 @@
 
 void serveur_appli (char *service, char* protocole);   /* programme serveur */
 void get(char *nom_fic); /* procedure qui envoie le contenu du fichier nom_fic au client*/
-
+void put(char *nom_fic); /*procedure qui créé le fichier nom_fic */
 
 struct sockaddr_in p_adr_socket;
 int sock_initiale,sock; //port des sockets qui seront utilisées
@@ -180,6 +180,7 @@ char nom_fic [100];
 					{
 						get(nom_fic);
 					}
+					else put(nom_fic);
 					
 				}
 				/*
@@ -226,6 +227,28 @@ void get(char *nom_fic)
 		printf("ce fichier n'existe pas !\n");
 	}
 	
+}
+
+
+void put(char* nom_fic)
+{
+	FILE * fp = fopen(nom_fic, "w");
+	
+
+	printf("Je commence le put\n");
+	
+	char tampon[100]; //taille 100 car recoie met un \0 à tampon[99]
+	int nb_lus; //resultat du read
+		
+	do
+	{
+		recoie(tampon);
+		nb_lus=strlen (tampon);
+		printf("nb_lus = %d\n", nb_lus);
+		fwrite(tampon, sizeof(char), nb_lus, fp);
+	}while(nb_lus==99);
+	
+	fclose(fp);
 }
 
 

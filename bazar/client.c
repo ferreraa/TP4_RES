@@ -30,6 +30,7 @@ int sock; //définit la socket pour la connexion au serveur
 
 void client_appli (char *serveur, char *service, char *protocole);
 void get(char * nom_fic);
+void put(char *nom_fic);
 
 /***********************************************************
 /* envoyer une chaine de caractere avec sa longueur */
@@ -210,6 +211,7 @@ while (prout ==1){
 			envoie (nom_fichier);
 			
 			if(lettre == 'g') {get(nom_fichier);}
+			else put(nom_fichier);
 		}
 		
 
@@ -232,20 +234,13 @@ void get(char * nom_fic)
 		char tampon[100]; //taille 100 car recoie met un \0 à tampon[99]
 		int nb_lus; //resultat du read
 		
-		if(nom_fic[0] == 's' || nom_fic[0] == 'c') 
-		{
-			printf("SECURITE : pour ne pas effacer notre code, les fichiers commençant par s ou c ne sont pas encore acceptés !\n");
-			return;
-		}
 		
 		FILE * fp = fopen(nom_fic, "w");
-
 		do
 		{
-			printf("Je commence à lire \n");
 			recoie(tampon);
-			printf(" tampon vaut : %s\n",tampon);
-			fwrite(tampon, sizeof(tampon), nb_lus, fp);
+			nb_lus=strlen (tampon);
+			fwrite(tampon, sizeof(char), nb_lus, fp);
 		}while(nb_lus==99);
 		
 		fclose(fp);
@@ -255,6 +250,38 @@ void get(char * nom_fic)
 	}
 }
 	
+
+//la lecture peut surement être optimisée.
+void put(char *nom_fic)
+{
+	
+	printf("Je commence le put !\n");
+	FILE * fp = fopen(nom_fic, "r"); //attention, ça va changer plus tard
+	
+//	if(fp = fopen(nom_fic, "r")) //vérifie que le fichier existe
+//	{
+
+		int nb_lus; //nb d'octets lus dans le fichier
+		char buffer [100];
+		
+		do
+		{
+			nb_lus = fread(buffer,1,99,fp);
+			buffer[nb_lus] = '\0';
+			printf("Je vais ecrire %d octets !\n", nb_lus);
+			envoie(buffer);
+		}while(nb_lus == 99);
+		fclose(fp);
+//	}
+//	else
+//	{
+//		printf("ce fichier n'existe pas !\n");
+//	}
+	
+}
+
+	
+	//notes pour plus tard : il faudra faire 4 fonctions : ls, put, get et quit.	Ces fonctions gèreront le fait d'envoyer ou non la commande au serveur. pour le moment, c'est appli_client qui le fait.
 	
 	
 /*****************************************************************************/
