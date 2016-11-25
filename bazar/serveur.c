@@ -31,6 +31,7 @@
 void serveur_appli (char *service, char* protocole);   /* programme serveur */
 void get(char *nom_fic); /* procedure qui envoie le contenu du fichier nom_fic au client*/
 void put(char *nom_fic); /*procedure qui créé le fichier nom_fic */
+void ls();
 
 struct sockaddr_in p_adr_socket;
 int sock_initiale,sock; //port des sockets qui seront utilisées
@@ -131,17 +132,10 @@ void serveur_appli(char *service, char *protocole)
 
 {
 	int b=1;
-  char tempo[2];//longueur du mot exprimée sous forme d'une chaine de caractères.   Puis caractère envoyé par le client. 
-  char lettre[2] = " ";
-char reponse[200];
-FILE *fp;
-int fd;
-char buf;
-int lg_reponse;
-char message [200];
-char nom_fic [100];
+	char lettre[2] = " ";
+	char nom_fic [100];
 
-  printf("Bienvenue \n");
+	printf("Bienvenue \n");
 	while (b==1){
 
   
@@ -154,47 +148,48 @@ char nom_fic [100];
 			b=0;
 			printf("Au revoir\n");
 		}
-		else {
-			if (lettre[0]=='l'){ // cas du ls ******************************
-				fp = popen("ls *", "r");
-				printf("J'ai fait le ls\n");
-				fd=fileno(fp);
-				
-				lg_reponse=0;
-				while (read(fd,&buf,1)==1){
-					reponse[lg_reponse]=buf;
-					lg_reponse++;
-				}
-				
-				
-				// envoyer la longueur -> PROBLEME SI LA LONGUEUR EST SUPERIEUR A 99
-				envoie(reponse, lg_reponse);
+		else if (lettre[0]=='l'){ // cas du ls ******************************
+			ls();
+		}		
+		else if(lettre[0] == 'g'|| lettre[0] == 'p')
+		{
+			recoie(nom_fic);
+			printf("nom_fic = %s\n",nom_fic);
+			if (lettre[0] == 'g')
+			{
+				get(nom_fic);
 			}
-			
+			else put(nom_fic);
 				
-			else {
-				if(lettre[0] == 'g'|| lettre[0] == 'p')
-				{
-					recoie(nom_fic);
-					if (lettre[0] == 'g')
-					{
-						get(nom_fic);
-					}
-					else put(nom_fic);
-					
-				}
-				/*
-				printf("Entrez une reponse\n");
-				scanf("%s",reponse);
-				
-				envoie(reponse, strlen(reponse));
-				*/
+		}
 			}
 		}
-	}
-  }
 
-//la lecture peut surement être optimisée.
+
+
+void ls()
+{
+	int lg_reponse;
+	char reponse[100];
+	char buf;
+	
+	FILE* fp = popen("ls *", "r");
+	printf("J'ai fait le ls\n");
+	int fd=fileno(fp);
+	
+	lg_reponse=0;
+	while (read(fd,&buf,1)==1){
+		reponse[lg_reponse]=buf;
+		lg_reponse++;
+	}
+		
+		
+		// envoyer la longueur -> PROBLEME SI LA LONGUEUR EST SUPERIEUR A 99
+		envoie(reponse, lg_reponse);
+	}
+
+
+
 void get(char *nom_fic)
 {
 	char fexiste;

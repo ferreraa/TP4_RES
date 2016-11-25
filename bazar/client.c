@@ -31,6 +31,7 @@ int sock; //définit la socket pour la connexion au serveur
 void client_appli (char *serveur, char *service, char *protocole);
 void get(char * nom_fic);
 void put(char *nom_fic);
+void ls();
 
 /***********************************************************
 /* envoyer une chaine de caractere avec sa longueur */
@@ -155,75 +156,77 @@ void client_appli (char *serveur,char *service,char *protocole)
 
 {
  
-	char tempo2 [2];
-  int lg_mot;
-  char mot[50];
-  int tempo;
-  char reponse[200];
-  char  longueur [100];
-  int lg_reponse;
-char commande [20];
-  printf("Bienvenue\n");
+	char commande [105];
 	int prout=1;
-	char lettre;
-	char nom_fichier[20];
-  
-while (prout ==1){
-	printf("\n->");
-	scanf("%s",commande);
+	char nom_fichier[100];
 
-	switch (commande[0]){
-		case 'l': printf("ls");lettre='l';
-			break;
-		case 'p': 
-			printf("put ");
-			lettre ='p';
-			scanf("%s", nom_fichier);
-			printf("\nNom du fichier : %s\n", nom_fichier);//recuperer le nom du fichier
-			break;
-		case 'g': 
-			printf("get "); 
-			lettre='g';
-			scanf("%s", nom_fichier);
-			printf("\nNom du fichier : %s\n", nom_fichier);//recuperer le nom du fichier
-			break;
-		case 'q': {printf("Au revoir\n"); prout = 0;lettre='q';}
-			break;
-		default : printf("aretter de faire n'importe quoi ! \n");
-	}
-  
+  printf("Bienvenue\n");
 
   
-	viderbuffer();
-	
-	lg_reponse=2;
+	while (prout ==1){
+		printf("\n->");
+		scanf("%s",commande);
 
-	if (prout==1){
-		if (lettre == 'l')
-		{
-			h_writes(sock,&lettre,1);
-
-			recoie(reponse);
-		}
-		if (lettre=='p' || lettre =='g'){
-			h_writes(sock,&lettre,1);
-
-			envoie (nom_fichier);
-			
-			if(lettre == 'g') {get(nom_fichier);}
-			else put(nom_fichier);
-		}
 		
+		if(strcmp(commande, "ls")==0)
+		{
+			ls();
+		}
+		else if (strncmp(commande, "put",3)==0)
+		{
+			scanf("%s",nom_fichier);
+			printf("nom_fichier = %s\n", nom_fichier);
+			put(nom_fichier);
+		}
+		else if (strncmp(commande, "get",3)==0)
+		{
+			scanf("%s",nom_fichier);
+			printf("nom_fichier = %s\n", nom_fichier);
+			get(nom_fichier);
+		}
+		else if (strcmp(commande,"q")==0)
+		{
+			printf("Au revoir\n");
+			prout = 0;
+			h_writes(sock,"q",1);
+		}
+		else {
+			printf("Commande : %s non reconnue !\n", commande);
+			printf("strcmp put  = %d\n",strncmp(commande, "put ",4));
+			printf("strcmp get  = %d\n",strncmp(commande, "get ",4));
+	  }
+	  
+	  
+		viderbuffer();
+
+
+
 
 	}
 }	
 
+
+
+
+void ls()
+{
+	char reponse [100];
+	h_writes(sock,"l",1);
+
+	recoie(reponse); //à modifier pour les grandes réponses
+
+	printf("%s",reponse);
 }
 
 
 //créé un fichier nom_fic et y écrit les messages envoyés par le serveur.
 void get(char * nom_fic)
 {
+	h_writes(sock,"g",1); //on indique qu'on veut faire un get.
+	
+	envoie(nom_fic); //on envoie le nom du fichier recherché
+	
+	
 	char fexiste;
 	h_reads(sock,&fexiste,1);
 
@@ -255,11 +258,14 @@ void get(char * nom_fic)
 void put(char *nom_fic)
 {
 	
-	printf("Je commence le put !\n");
-	FILE * fp = fopen(nom_fic, "r"); //attention, ça va changer plus tard
+	h_writes(sock,"p",1);
 	
-//	if(fp = fopen(nom_fic, "r")) //vérifie que le fichier existe
-//	{
+	envoie(nom_fic);
+	
+	printf("Je commence le put !\n");
+	FILE * fp;
+	if(fp = fopen(nom_fic, "r")) //vérifie que le fichier existe
+	{
 
 		int nb_lus; //nb d'octets lus dans le fichier
 		char buffer [100];
@@ -272,16 +278,18 @@ void put(char *nom_fic)
 			envoie(buffer);
 		}while(nb_lus == 99);
 		fclose(fp);
-//	}
-//	else
-//	{
-//		printf("ce fichier n'existe pas !\n");
-//	}
+	}
+	else
+	{
+		printf("ce fichier n'existe pas !\n");
+	}
 	
 }
 
 	
-	//notes pour plus tard : il faudra faire 4 fonctions : ls, put, get et quit.	Ces fonctions gèreront le fait d'envoyer ou non la commande au serveur. pour le moment, c'est appli_client qui le fait.
 	
 	
 /*****************************************************************************/
+
+
+
